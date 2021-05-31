@@ -33,13 +33,13 @@ class UploadImage(MethodView):
     """
     def __init__(self, args):
         cfg = args.get("cfg")
-        env_path = cfg.get("AWS_ENV_PATH")
         self.s3_bucket_name = cfg.get("S3_BUCKET_NAME")
         self.region_name = cfg.get("REGION_NAME")
         self.acl = cfg.get("ACL")
-        if env_path and self.s3_bucket_name and self.region_name:
-            self.aws_auth = AWSAuth(env_path)
-            self.logger = args.get('logger')
+        self.logger = args.get('logger')
+        if self.s3_bucket_name and self.region_name:
+            self.aws_auth = AWSAuth()
+
 
     def post(self):
         """
@@ -54,7 +54,7 @@ class UploadImage(MethodView):
             vargs = UploadSchema().load(args)
         # client validation error
         except ValidationError as err:
-            self.logger.info(err.messages)
+            self.logger.warn(err.messages)
             return err.messages, 422
 
         image_name = vargs['file_name']
@@ -79,5 +79,5 @@ class UploadImage(MethodView):
             data = resp['fields']
             return {'success': True, 'post_url': post_url, 'data': data}
         except ValueError as err:
-            self.logger.info(err)
+            self.logger.warn(err)
             raise InternalServerError("Internal Server Error")

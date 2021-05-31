@@ -1,0 +1,58 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ocr-job
+  namespace: dev
+spec:
+  template:
+    spec:
+      containers:
+        - image: ocr_prefect
+          # Note this will override any entrypoint statements in the docker image
+          command: ["/bin/bash", "-c", "python run_flow.py -i IMG-9134.jpg"]
+         # command: ["/bin/sh", "-c", "printenv"]
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BFF_HOST
+              value: ocr-bff-svc
+          envFrom:
+            - configMapRef:
+                name: awsenv
+            - configMapRef:
+                name: ocrenv
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+            - name: podinfo
+              mountPath: /etc/podinfo
+            - name: podstatus
+              mountPath: /etc/podstatus
+          name: ocr
+          resources:
+            requests:
+              memory: 5Gi
+              cpu: "6"
+            limits:
+              memory: 5Gi
+              cpu: "6"
+      nodeSelector:
+        nodetype: worker
+      dnsPolicy: ClusterFirst
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+        - name: podinfo
+          downwardAPI:
+            # Note: Since kubernetes version 1.9 and forth, volumeMounts behavior on secret, configMap,
+            # downwardAPI and projected have changed to Read-Only by default. So create a different volumeMount to write
+            # pod status
+            items:
+                - path: "pod-name"
+                  fieldRef:
+                    fieldPath: metadata.name
+        - name: podstatus
+          emptyDir: {}
+      restartPolicy: Never
+  backoffLimit: 0
+

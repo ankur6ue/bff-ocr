@@ -4,6 +4,7 @@ import time
 
 url = 'http://127.0.0.1:5001' # The root url of the flask app
 
+
 def test_post():
     image_name = 'dog.jpg'
     r = requests.post(url + '/upload_image', {'file_name': image_name, 'content_size_min': 2000,
@@ -78,9 +79,9 @@ def test_post_url_expired():
     # expired url test: set expired to 't' seconds and then sleep for longer than that
     image_name = 'dog.jpg'
     r = requests.post(url + '/upload_image', {'file_name': image_name, 'content_size_min': 2000,
-                                              'content_size_max': 80000, 'expiration': 10})
+                                              'content_size_max': 80000, 'expiration': 1})
     assert r.status_code == 200
-    time.sleep(12)
+    time.sleep(2)
     r = r.json()
     post_url = r['post_url']
     data = r['data']
@@ -91,5 +92,5 @@ def test_post_url_expired():
         # Invalid according to Policy: Policy expired.
         assert r.status_code == 403
 
-test_post_url_oor()
+# test_post_url()
 # test_post_url_expired()

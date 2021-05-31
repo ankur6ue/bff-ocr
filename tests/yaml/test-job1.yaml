@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: dev
+spec:
+  # ttlSecondsAfterFinished: 0
+  template:
+    spec:
+      containers:
+        - image: busybox
+          command: ["/bin/sh", "-c", "sleep 5"]
+          imagePullPolicy: IfNotPresent
+          name: testjob
+          resources:
+            requests:
+              memory: 1Gi
+              cpu: "6"
+            limits:
+              memory: 1Gi
+              cpu: "6"
+
+      dnsPolicy: ClusterFirst
+      restartPolicy: Never
+  backoffLimit: 1
+
