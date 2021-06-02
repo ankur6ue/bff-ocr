@@ -2,13 +2,21 @@ import os
 import boto3
 import logging
 import botocore
+from .mysql import get_creds
 
+def set_session_creds(app, role):
 
-def set_session_creds(role):
-
+    # first try to read the creds from the mysql database
+    credentials = get_creds(app.config["MYSQL"], role, app.logger)
+    if credentials:
+        os.environ['AWS_ACCESS_KEY_ID_SESS'] = credentials[1]
+        os.environ['AWS_SECRET_ACCESS_KEY_SESS'] = credentials[2]
+        os.environ['AWS_SESSION_TOKEN'] = credentials[3]
+        return
 
     # Call the assume_role method of the STSConnection object and pass the role
-    # ARN and a role session name.
+    # ARN and a role session name. The ankur-dev profile must be available for this to work.. Which means
+    # that the pod running this code can only be scheduled on the master node.
     session = boto3.Session(profile_name='ankur-dev')
     sts_client = session.client('sts')
 

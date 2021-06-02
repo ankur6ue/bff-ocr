@@ -83,6 +83,35 @@ def get_row(config, job_name, logger):
         cnx.close()
 
 
+# Reads the credentials corresponding to the IAMRole passed as parameter
+def get_creds(config, iamrole, logger):
+    # See https://stackoverflow.com/questions/29772337/python-mysql-connector-unread-result-found-when-using-fetchone
+    # for why buffered=True is needed
+    cnx = connect(config, logger)
+    cursor = cnx.cursor(buffered=True)
+
+    # To get all rows
+    # cursor.execute("SELECT * FROM jobs")
+    # result = cursor.fetchall()
+    # loop through the rows
+    # for row in result:
+    #    print(row)
+    #    print("\n")
+
+    query = ("SELECT * FROM creds.creds "
+             "WHERE iamrole  LIKE %s")
+    try:
+        cursor.execute(query, (iamrole, ))
+        if cursor.rowcount == 0:
+            return None
+        return cursor.fetchone()
+
+    except mysql.connector.Error as err:
+        logger.warn("Error inserting row: {}".format(err.msg))
+    finally:
+        cnx.close()
+
+
 def connect(config, logger=None):
     try:
         cnx = mysql.connector.connect(**config)

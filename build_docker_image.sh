@@ -23,10 +23,10 @@ CONTAINER_NAME=bff_api
 cp ../k8s/ocr-job.yaml ./
 # build the bff_api docker image. This is the main server for the OCR system. It runs endpoints for triggering
 # workflows, getting/posting workflow status updates etc.
-docker build -t $IMAGE_NAME .
+docker build -t "$IMAGE_NAME" .
 
 # deploy to any worker nodes on our kubernetes cluster
-REPONAME=aster-ocr-workflow
+REPONAME=bff-ocr
 . ../deploy/deploy_workers.sh
 deploy_workers ${IMAGE_NAME} ${REPONAME}
 

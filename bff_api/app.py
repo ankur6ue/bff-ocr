@@ -52,7 +52,7 @@ def renew_aws_session_token(app):
             set_session_creds(iamrole)
     elif os.environ.get('S3ACCESSIAMROLE') is not None:
         iamrole = os.environ.get('S3ACCESSIAMROLE')
-        set_session_creds(iamrole)
+        set_session_creds(app, iamrole)
     else:
         raise Exception('Error getting S3 access credentials, aborting')
 
