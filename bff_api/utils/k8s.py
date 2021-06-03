@@ -107,7 +107,7 @@ def create_k8s_job(img_str):
     # Configs can be set in Configuration class directly or using helper
     # utility. If no argument provided, the config will be loaded from
     # default location.
-    config.load_kube_config()
+    config.load_kube_config(os.path.join(os.environ["HOME"], '.kube/config'))
     batch_v1 = client.BatchV1Api()
     # Create a job object with client-python API. The job we
     # created is same as the `pi-job.yaml` in the /examples folder.
