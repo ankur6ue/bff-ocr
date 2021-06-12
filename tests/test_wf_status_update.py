@@ -9,7 +9,7 @@ import threading
 import datetime as dt
 from prettytable import PrettyTable
 # This is the URL for the kubernetes ingress + prefix path for the ocr-bff service
-url = 'http://127.0.0.1:30553/ocr-bff'
+url = 'http://127.0.0.1:30559/ocr-bff'
 # url = 'http://127.0.0.1:5001'
 redis_url = '10.100.184.216'
 

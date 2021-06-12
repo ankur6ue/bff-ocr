@@ -134,8 +134,8 @@ class WorkflowStatusUpdate(MethodView):
                                                              "is_completed": False,
                                                              "success": False,
                                                              "job_name": job_name}], many=True)}
-        else:
-            # case 2: job is pending
+        else: # job is pending/running/completed
+            # case 2: job is pending (hasn't been scheduled for execution)
             k8s_start_time = job_k8s_status['start_time']
             k8s_completion_time = job_k8s_status['completion_time']
             if k8s_start_time is None:
@@ -182,11 +182,19 @@ class WorkflowStatusUpdate(MethodView):
                                                                      "job_name": job_name}], many=True)}
             # job started running, but hasn't finished
             if k8s_start_time and k8s_completion_time is None:
-                update = WfPostStatusUpdateSchema()
-                return {'success': True, "status": update.dump([{"status_msg": "running",
-                                                                  "is_completed": False,
-                                                                  "success": False,
-                                                                  "job_name": job_name}], many=True)}
+                # it could happen that job has started running from kubernetes perspective, but the python code
+                # hasn't start executing. Because the first thing a job does when it starts executing is to post
+                # its start time in the
+                # mysql database, we can check for the job status in the database to verify the job actually
+                # started running.
+                # if not, the job is still pending, from a user's perspective.
+                if self.mysql_cfg:
+                    job_status = get_row(self.mysql_cfg, job_name, self.logger)
+                    update = WfPostStatusUpdateSchema()
+                    return {'success': True, "status": update.dump([{"status_msg": "running" if job_status else "pending",
+                                                                      "is_completed": False,
+                                                                      "success": False,
+                                                                      "job_name": job_name}], many=True)}
 
 
 
